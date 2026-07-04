@@ -301,32 +301,25 @@ export default function Home() {
   return (
     <main className="min-h-screen w-full max-w-full overflow-x-hidden bg-muted/30 text-foreground">
       <div className="mx-auto grid w-full max-w-7xl gap-4 px-3 py-3 sm:gap-5 sm:px-6 sm:py-5 lg:px-8">
-        <header className="grid min-w-0 gap-4 border-b bg-background/80 pb-4 sm:rounded-lg sm:border sm:p-4 sm:shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.72fr)] lg:items-center">
-          <div className="flex min-w-0 items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg border bg-card text-foreground shadow-sm">
-              <Route className="size-5" aria-hidden="true" />
+        <header className="grid min-w-0 gap-4 rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 via-slate-100 to-white p-6 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.35)] lg:grid-cols-[minmax(0,1.2fr)_minmax(420px,0.8fr)] lg:items-center">
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-500 text-white shadow-xl shadow-sky-200/40">
+              <Route className="size-6" aria-hidden="true" />
             </div>
             <div className="min-w-0">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-semibold leading-tight tracking-normal sm:text-3xl">
-                  RouteLens
-                </h1>
-                <Badge
-                  variant="secondary"
-                  className="h-6 shrink-0 gap-1 border-sky-200 bg-sky-50 px-2 text-sky-950"
-                >
-                  <Cpu className="size-3" aria-hidden="true" />
-                  BTL Runtime
-                </Badge>
-              </div>
-              <p className="mt-1 max-w-2xl text-pretty text-sm leading-6 text-muted-foreground sm:text-base">
-                Prompt testing workspace for route comparison, runtime proof,
-                and production export.
+              <h1 className="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+                RouteLens
+              </h1>
+              <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-700">
+                See what your AI route costs before you ship.
+              </p>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+                Evaluate prompts through BTL Runtime, compare model routes, inspect runtime proof, and export production-ready code.
               </p>
             </div>
           </div>
 
-          <div className="grid min-w-0 gap-2 sm:grid-cols-3">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-3">
             <StatusPill
               icon={<ShieldCheck className="size-4" aria-hidden="true" />}
               label="Server-side key"
@@ -435,27 +428,60 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="order-2 min-w-0 rounded-lg border-sky-200 bg-sky-50/70 shadow-sm ring-1 ring-sky-200/70 lg:col-start-2 lg:row-span-2">
-            <CardHeader className="gap-3 border-b border-sky-200/80 sm:flex-row sm:items-start sm:justify-between">
+          <Card className="order-2 min-w-0 rounded-3xl border border-slate-200 bg-white shadow-[0_18px_45px_-24px_rgba(15,23,42,0.4)] lg:col-start-2 lg:row-span-2">
+            <CardHeader className="gap-3 border-b border-slate-200/80 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <CardTitle className="text-lg text-sky-950">
+                <CardTitle className="text-lg text-slate-950">
                   Runtime Proof
                 </CardTitle>
-                <CardDescription className="text-sm text-sky-900/70">
+                <CardDescription className="text-sm text-slate-600">
                   BTL response metadata
                 </CardDescription>
               </div>
               <CardAction className="static col-auto row-auto justify-self-start sm:justify-self-end">
-                <Badge className="h-6 gap-1 bg-sky-950 text-white">
+                <Badge className="h-6 gap-1 bg-slate-950 text-white">
                   <BadgeCheck className="size-3" aria-hidden="true" />
                   {runtimeResult ? "Captured" : "Visible"}
                 </Badge>
               </CardAction>
             </CardHeader>
-            <CardContent className="grid gap-3 pt-4">
-              {proofRows.map(([label, value]) => (
-                <ProofRow key={label} label={label} value={value} />
-              ))}
+            <CardContent className="grid gap-4 pt-4">
+              <div className="rounded-3xl border border-slate-200 bg-slate-950/95 p-4 text-slate-50 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-slate-400">
+                      BTL Runtime Endpoint
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-100">
+                        POST
+                      </span>
+                      <span
+                        className="max-w-full truncate font-mono text-sm text-slate-100"
+                        title={runtimeResult?.endpoint || "https://api.badtheorylabs.com/v1/chat/completions"}
+                      >
+                        /v1/chat/completions
+                      </span>
+                    </div>
+                  </div>
+                  <div className="min-w-0 text-sm text-slate-200">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-slate-400">
+                      Host
+                    </p>
+                    <p className="mt-1 truncate font-mono text-slate-100" title="api.badtheorylabs.com">
+                      api.badtheorylabs.com
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-2 xl:grid-cols-2">
+                {proofRows
+                  .filter(([label]) => label !== "Endpoint")
+                  .map(([label, value]) => (
+                    <ProofRow key={label} label={label} value={value} />
+                  ))}
+              </div>
             </CardContent>
           </Card>
 
@@ -550,7 +576,7 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="order-5 min-w-0 rounded-lg shadow-sm lg:col-start-2">
+          <Card className="order-5 min-w-0 rounded-3xl shadow-sm lg:col-start-2">
             <CardHeader className="gap-3 border-b sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <CardTitle className="text-lg">Export</CardTitle>
@@ -570,19 +596,21 @@ export default function Home() {
                   ) : (
                     <Clipboard className="size-4" aria-hidden="true" />
                   )}
-                  {copiedExport ? "Copied" : "Copy code"}
+                  {copiedExport ? "Copied" : "Copy production code"}
                 </Button>
               </CardAction>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="min-w-0 rounded-lg border bg-background p-3 shadow-sm">
-                <div className="mb-3 flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
-                  <Braces className="size-4 shrink-0" aria-hidden="true" />
-                  <span className="min-w-0 truncate">
-                    OpenAI-compatible BTL Runtime client
-                  </span>
+              <div className="min-w-0 rounded-3xl border border-slate-800 bg-slate-950 p-4 shadow-sm">
+                <div className="mb-3 flex min-w-0 items-center justify-between gap-2 text-sm text-slate-400">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Braces className="size-4 shrink-0" aria-hidden="true" />
+                    <span className="min-w-0 truncate text-slate-200">
+                      OpenAI-compatible BTL Runtime client
+                    </span>
+                  </div>
                 </div>
-                <pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-muted/40 p-3 font-mono text-sm leading-6">
+                <pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded-3xl bg-slate-950/95 p-4 font-mono text-sm leading-6 text-slate-100">
                   <code>{exportLines.join("\n")}</code>
                 </pre>
               </div>
