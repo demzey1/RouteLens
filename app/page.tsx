@@ -902,10 +902,12 @@ function ProofRow({
   const displayValue = formatProofValue(value)
 
   return (
-    <div className="grid min-w-0 gap-1 rounded-lg border border-sky-200 bg-white/80 px-3 py-3 shadow-sm sm:grid-cols-[132px_minmax(0,1fr)] sm:items-start">
-      <span className="text-sm font-medium text-sky-950/70">{label}</span>
+    <div className="flex min-w-0 items-center justify-between gap-4 rounded-xl border border-sky-200 bg-white/85 px-3 py-3 shadow-sm">
+      <span className="shrink-0 text-sm font-medium text-sky-950/70">
+        {label}
+      </span>
       <span
-        className="min-w-0 break-words font-mono text-sm leading-6 text-sky-950 sm:text-right"
+        className="min-w-0 truncate text-right font-mono text-sm leading-6 text-sky-950 tabular-nums"
         title={displayValue}
       >
         {displayValue}
