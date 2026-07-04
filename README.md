@@ -1,47 +1,193 @@
 # RouteLens
 
-RouteLens is a web app for evaluating and comparing AI model routes through BTL Runtime.
+RouteLens is an open-source web app for evaluating and comparing AI model routes through BTL Runtime before shipping them into production.
 
-## One-line pitch
+It is not just a chatbot.
 
-RouteLens helps developers run prompts through BTL Runtime, compare model routes, inspect runtime proof, get a production route recommendation, and export production-ready BTL integration code.
+A chatbot gives you an answer.
 
-## Problem
+RouteLens helps you understand the route behind that answer: which model responded, how many tokens were used, what the request cost, what runtime proof was returned, and which route makes more sense for production.
 
-AI builders often choose model routes blindly. Before shipping an AI feature, they may not know which route is cheaper, which route produces better output, how many tokens are used, or what each runtime call costs.
+GitHub:  
+https://github.com/demzey1/RouteLens
 
-## Solution
+Live demo:  
+https://route-lens-silk.vercel.app/
 
-RouteLens makes the runtime visible. It lets builders evaluate prompts through BTL Runtime, compare routes like `btl-2` and `gpt-4o-mini-2024-07-18`, inspect cost/token metadata, get a production route recommendation, and export code using the BTL OpenAI-compatible API.
+---
+
+## What is RouteLens?
+
+RouteLens is a runtime route evaluator for AI builders.
+
+It lets developers run prompts through BTL Runtime, compare model routes side by side, inspect runtime proof, and export production-ready OpenAI-compatible code.
+
+The main idea is simple:
+
+> Before shipping an AI feature, developers should be able to see what their AI route costs, how it behaves, and whether another route is better.
+
+Most AI apps hide this part.
+
+RouteLens makes it visible.
+
+---
+
+## Why this exists
+
+When building AI apps, developers often pick a model route blindly.
+
+They write a prompt, send it to a model, get a response, and move on.
+
+But for real products, that is not enough.
+
+You also need to know:
+
+- Which model route generated the response?
+- How many prompt tokens were used?
+- How many completion tokens were used?
+- What was the total token usage?
+- What did the request cost?
+- Was there a saved amount?
+- Did another route produce a similar result for less?
+- Is this route practical for production?
+- What code do I actually ship?
+
+RouteLens was built to answer those questions in one workflow.
+
+---
+
+## Core idea
+
+RouteLens follows this flow:
+
+```text
+Prompt
+→ BTL Runtime call
+→ Runtime proof
+→ Model route comparison
+→ Production recommendation
+→ Export code
+```
+
+Instead of only asking:
+
+```text
+What did the model say?
+```
+
+RouteLens also asks:
+
+```text
+Was this the right route to use?
+```
+
+That is the difference.
+
+---
 
 ## What the app does
 
-RouteLens has four main parts:
+RouteLens has four main sections:
 
-1. **Prompt Composer**  
-   Enter a system instruction, user prompt, model, max tokens, and temperature.
+### 1. Prompt Composer
 
-2. **Runtime Proof**  
-   Shows BTL Runtime metadata from the response, including endpoint, model, benchmark cost, customer charge, saved amount, and token usage.
+The Prompt Composer lets you enter:
 
-3. **Model Compare**  
-   Runs the same prompt through two BTL Runtime model routes and shows both outputs side by side.
+- system instruction
+- user prompt
+- model route
+- max tokens
+- temperature
 
-4. **Recommendation + Export**  
-   Recommends a production route based on comparison signals and generates copy-paste BTL/OpenAI-compatible code.
+This gives you a controlled way to test a prompt before using it inside an app.
 
-## Features
+---
 
-- Prompt composer
-- Single BTL Runtime call
-- Runtime Proof panel
-- Model route comparison
-- Side-by-side model outputs
-- Cost, charge, saved amount, and token usage display
-- Production route recommendation
-- Exportable BTL/OpenAI-compatible code
-- Server-side API key handling
-- No API key exposed in the browser
+### 2. Runtime Proof
+
+The Runtime Proof panel shows response metadata from the BTL Runtime call.
+
+It displays:
+
+- endpoint used
+- model route
+- request ID
+- cache tier
+- benchmark cost
+- customer charge
+- saved amount
+- prompt tokens
+- completion tokens
+- total tokens
+
+This is the main value of RouteLens.
+
+The response is not treated as a black box. You can see what happened under the hood.
+
+---
+
+### 3. Model Compare
+
+Model Compare lets you run the same prompt through two different BTL Runtime model routes.
+
+This makes it easier to compare:
+
+- output quality
+- cost
+- token usage
+- route behavior
+- production suitability
+
+A normal chatbot gives one answer.
+
+RouteLens lets you compare routes and inspect tradeoffs.
+
+---
+
+### 4. Recommendation + Export
+
+After comparing routes, RouteLens recommends a production route based on visible signals such as:
+
+- usable output
+- customer charge
+- saved amount
+- total token usage
+- selected model route
+
+Then it generates exportable OpenAI-compatible BTL Runtime code using server-side environment variables.
+
+This helps bridge the gap between experimentation and actual implementation.
+
+---
+
+## AI models available
+
+RouteLens currently supports the following model routes:
+
+```text
+btl-2
+gpt-4o-mini-2024-07-18
+deepseek-v4-pro
+```
+
+Default single-run model:
+
+```text
+btl-2
+```
+
+Default comparison setup:
+
+```text
+Model A: btl-2
+Model B: gpt-4o-mini-2024-07-18
+```
+
+`deepseek-v4-pro` is included as an optional stronger route for deeper reasoning or larger-context evaluations.
+
+The app is designed so more BTL Runtime model routes can be added later.
+
+---
 
 ## BTL Runtime usage
 
@@ -59,86 +205,73 @@ Base URL:
 https://api.badtheorylabs.com/v1
 ```
 
-Secure server route inside this app:
+Inside the app, the frontend does not call BTL Runtime directly.
+
+Instead, the browser calls a secure Next.js server route:
 
 ```text
 /api/runtime/run
 ```
 
-The frontend calls `/api/runtime/run`.
+That server route calls BTL Runtime using environment variables.
 
-The server route then calls BTL Runtime at:
+This keeps the API key server-side and out of the browser.
 
-```text
-https://api.badtheorylabs.com/v1/chat/completions
-```
+---
 
-The API key is stored server-side as:
+## Runtime request flow
 
-```text
-GATEWAY_API_KEY
-```
-
-The frontend never receives the API key.
-
-## Models available
-
-RouteLens currently supports these model routes:
+The request flow looks like this:
 
 ```text
-btl-2
-gpt-4o-mini-2024-07-18
-deepseek-v4-pro
+Browser
+→ /api/runtime/run
+→ BTL Runtime /v1/chat/completions
+→ response + runtime metadata
+→ RouteLens UI
 ```
 
-Default single-run model:
+The frontend only talks to the internal Next.js API route.
 
-```text
-btl-2
+The BTL API key is never exposed to the browser.
+
+---
+
+## Environment variables
+
+RouteLens uses these environment variables:
+
+```env
+GATEWAY_API_KEY=
+BTL_BASE_URL=https://api.badtheorylabs.com/v1
 ```
 
-Default comparison models:
+`GATEWAY_API_KEY` should contain your BTL Runtime API key.
 
-```text
-Model A: btl-2
-Model B: gpt-4o-mini-2024-07-18
-```
+`BTL_BASE_URL` should point to the BTL Runtime base URL.
 
-`deepseek-v4-pro` is available as an optional stronger route for deeper reasoning evaluations.
+Never commit `.env.local`.
 
-## Recommendation feature
+---
 
-After comparing two routes, RouteLens recommends a production route based on visible comparison signals such as:
+## Example export code
 
-- whether the route returned a usable output
-- customer charge
-- saved amount
-- total token usage
-- model route selected
+RouteLens can generate production-ready BTL/OpenAI-compatible code.
 
-The recommendation is meant to help developers choose a practical default route before shipping an AI feature.
-
-## Export feature
-
-RouteLens generates production-ready BTL/OpenAI-compatible code using environment variables only.
-
-Example export format:
+Example:
 
 ```ts
-import OpenAI from "openai";
+import OpenAI from "openai"
 
 const client = new OpenAI({
   apiKey: process.env.GATEWAY_API_KEY,
   baseURL: process.env.BTL_BASE_URL ?? "https://api.badtheorylabs.com/v1",
-});
+})
 
 const response = await client.chat.completions.create({
   model: "btl-2",
   messages: [
-    {
-      role: "system",
-      content: "You are a concise product assistant.",
-    },
+    { role: "system", content: "You are a concise product assistant." },
     {
       role: "user",
       content:
@@ -147,12 +280,38 @@ const response = await client.chat.completions.create({
   ],
   max_tokens: 80,
   temperature: 0.4,
-});
+})
+
+console.log(response.choices[0]?.message?.content)
 ```
 
-The exported code does not include any real API key.
+The exported code uses environment variables only.
+
+No real API key is included in the generated snippet.
+
+---
+
+## Features
+
+- Prompt composer
+- Single BTL Runtime call
+- Runtime Proof panel
+- Model route comparison
+- Side-by-side model outputs
+- Cost visibility
+- Token usage visibility
+- Customer charge display
+- Saved amount display
+- Production route recommendation
+- Exportable OpenAI-compatible BTL code
+- Server-side API key handling
+- No API key exposed in the browser
+
+---
 
 ## Tech stack
+
+RouteLens is built with:
 
 - Next.js
 - TypeScript
@@ -161,7 +320,46 @@ The exported code does not include any real API key.
 - BTL Runtime API
 - Vercel
 
-## Environment variables
+The architecture is intentionally simple.
+
+There is no database, no auth system, and no unnecessary backend complexity.
+
+The focus is the runtime evaluation workflow.
+
+---
+
+## Security
+
+RouteLens keeps the BTL Runtime key server-side.
+
+The browser never receives the API key.
+
+The app uses:
+
+```text
+GATEWAY_API_KEY
+```
+
+inside the server route only.
+
+The repository includes `.env.example` with empty placeholders, but `.env.local` should never be committed.
+
+---
+
+## Local setup
+
+Clone the repo:
+
+```bash
+git clone https://github.com/demzey1/RouteLens.git
+cd RouteLens
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
 
 Create `.env.local`:
 
@@ -170,12 +368,9 @@ GATEWAY_API_KEY=your_btl_runtime_key
 BTL_BASE_URL=https://api.badtheorylabs.com/v1
 ```
 
-Never commit `.env.local`.
-
-## Run locally
+Run locally:
 
 ```bash
-npm install
 npm run dev
 ```
 
@@ -185,15 +380,30 @@ Open:
 http://localhost:3000
 ```
 
-If port 3000 is busy, Next.js may use another port such as 3001.
+If port `3000` is already in use, Next.js may use another port such as `3001`.
+
+---
 
 ## Build
+
+Run:
 
 ```bash
 npm run build
 ```
 
+The app builds the main page and the runtime API route:
+
+```text
+/
+ /api/runtime/run
+```
+
+---
+
 ## Example prompt
+
+You can try RouteLens with this prompt:
 
 ```text
 Compare this product idea in one sentence: RouteLens helps developers evaluate BTL Runtime model routes.
@@ -208,17 +418,87 @@ maxTokens: 80
 temperature: 0.4
 ```
 
+---
+
 ## Product walkthrough
 
-1. Enter a prompt.
-2. Run a single BTL Runtime call.
+1. Enter a prompt in the Prompt Composer.
+2. Run a single request through BTL Runtime.
 3. Review the Runtime Proof panel.
-4. Compare `btl-2` against `gpt-4o-mini-2024-07-18`.
-5. Review both outputs.
-6. Compare cost, charge, saved amount, and token differences.
+4. Compare two model routes.
+5. Review both model outputs.
+6. Compare cost, charge, saved amount, and token usage.
 7. Review the recommended production route.
-8. Export BTL/OpenAI-compatible code.
+8. Export OpenAI-compatible BTL Runtime code.
+
+---
+
+## What makes RouteLens different from a chatbot?
+
+A chatbot is focused on conversation.
+
+RouteLens is focused on evaluation.
+
+A chatbot asks:
+
+```text
+What should the model say?
+```
+
+RouteLens asks:
+
+```text
+Which model route should produce this response in production?
+```
+
+That is the difference.
+
+The model response is only one part of the app.
+
+The real value is in the runtime proof, route comparison, recommendation, and export flow.
+
+---
+
+## Future improvements
+
+Possible future improvements include:
+
+- route history
+- saved prompt experiments
+- latency comparison
+- richer cost charts
+- cache analysis
+- route scoring
+- more model routes
+- team workspaces
+- production config export
+- prompt variant comparison
+
+The first version keeps the scope focused on the core workflow:
+
+```text
+evaluate route
+compare routes
+inspect proof
+export code
+```
+
+---
 
 ## Why this matters
 
-Most AI apps hide the runtime. RouteLens makes BTL Runtime visible, evaluable, and useful before developers ship AI features.
+Most AI apps hide the runtime.
+
+RouteLens makes BTL Runtime visible, measurable, and useful before developers ship AI features.
+
+AI builders should not have to guess which route makes sense.
+
+They should be able to inspect it, compare it, and ship with more confidence.
+
+---
+
+## License
+
+Open source.
+
+Use it, fork it, improve it.
